@@ -1,0 +1,9 @@
+{
+    "Playing": {
+        "right": "l",
+        "left": "h",
+        "rotate": "k",
+        "quit": "\u0003",
+        "pause": "\u001b"
+    }
+}

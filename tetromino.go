@@ -3,6 +3,9 @@ package main
 import(
 	"math"
 )
+const maxHorizontal = 24
+const maxVertical = 13
+const minHorizontal = 0
 type coordinate struct {
 	x int
 	y int

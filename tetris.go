@@ -18,7 +18,6 @@ const sideLine = '─'
 const BLOCK = '█'
 const EMPTY = ' '
 
-type gameAction func(*[2][2]int, *piecePosition)
 
 func main() {
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
@@ -36,12 +35,6 @@ func main() {
 			{y: 0, x: 5},
 			{y: 0, x: 6},
 		},
-	}
-	mapping := map[byte]gameAction{
-		3:   inputInterupt,
-		'k': rotatePiece,
-		'h': inputMoveLeft,
-		'l': inputMoveRight,
 	}
 	rotationMatrix := createRotationMatrix(90)
 	fmt.Println(rotationMatrix)
