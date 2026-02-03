@@ -43,32 +43,6 @@ func main() {
 	clearScreen(&screen)
 	var oldPosition *piecePosition = nil
 	for {
-		select {
-		case i := <-input:
-			if i == 3 {
-				panic(1)
-			}
-			lower := byte(unicode.ToLower(rune(i)))
-			f, ok := mapping[lower]
-			if ok {
-				pieceCopy := position
-				oldPosition = &pieceCopy
-				f(&rotationMatrix, &position)
-				drawPiece(&position, oldPosition, &screen)
-				drawScreenToTerminal(&screen)
-			}
-
-		default:
-		}
-		temp++
-		if temp%8 == 0 {
-			temp = 1
-			pieceCopy := position
-			oldPosition = &pieceCopy
-			fallPiece(&position)
-			drawPiece(&position, oldPosition, &screen)
-			drawScreenToTerminal(&screen)
-		}
 		time.Sleep(30 * time.Millisecond)
 	}
 }
