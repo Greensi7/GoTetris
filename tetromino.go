@@ -3,9 +3,6 @@ package main
 import(
 	"math"
 )
-const maxHorizontal = 24
-const maxVertical = 13
-const minHorizontal = 0
 type coordinate struct {
 	x int
 	y int
@@ -34,10 +31,10 @@ func pushFromSide(position *piecePosition) {
 	minFlag := false
 	maxFlag := false
 	for _, cord := range position.cords {
-		if cord.x >= (maxHorizontal - 1) {
+		if cord.x >= (height - 1) {
 			maxFlag = true
 		}
-		if cord.x <= minHorizontal {
+		if cord.x <= minWidth {
 			minFlag = true
 		}
 		if cord.x > max {
@@ -48,10 +45,10 @@ func pushFromSide(position *piecePosition) {
 		}
 	}
 	if maxFlag {
-		moveHorizontal(position, -int(math.Abs(float64(max-1-maxHorizontal))))
+		moveHorizontal(position, -int(math.Abs(float64(max-1-height))))
 	}
 	if minFlag {
-		moveHorizontal(position, int(math.Abs(float64(min-minHorizontal+1))))
+		moveHorizontal(position, int(math.Abs(float64(min-minWidth+1))))
 	}
 }
 
@@ -85,7 +82,7 @@ func rotatePiece(rotationMatrix *[2][2]int, position *piecePosition) {
 
 func fallPiece(position *piecePosition) {
 	for _, cord := range position.cords {
-		if cord.y >= (maxVertical - 2) {
+		if cord.y >= (height - 2) {
 			return
 		}
 	}

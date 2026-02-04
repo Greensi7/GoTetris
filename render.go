@@ -5,7 +5,7 @@ import(
 	"math/rand"
 )
 
-func drawScreenToTerminal(screen *[maxVertical][maxHorizontal]rune) {
+func drawScreenToTerminal(screen [][]rune) {
 	clearTerminal()
 	for rowIndex, row := range screen {
 		for columnIndex, pixel := range row {
