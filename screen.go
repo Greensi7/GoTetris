@@ -8,7 +8,6 @@ const width = 13
 const minWidth = 0
 const minHeight = 0
 
-
 func isOnBoard(cord *coordinate) bool {
 	if cord == nil {
 		return false
@@ -20,7 +19,7 @@ func isOnBoard(cord *coordinate) bool {
 	return true
 }
 
-func eraserPiece(position *piecePosition, screen [][]rune){
+func eraserPiece(position *piecePosition, screen [][]rune) {
 	if position == nil || screen == nil {
 		panic(1)
 	}
@@ -41,14 +40,24 @@ func eraserPiece(position *piecePosition, screen [][]rune){
 	}
 }
 
-func isValidPos(position *piecePosition, screen [][]rune)bool{
+func isEnd(position *piecePosition) bool {
+	for _, pieceBlockCord := range position.cords {
+
+		if pieceBlockCord.y <= 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func isValidPos(position *piecePosition, screen [][]rune) bool {
 	for _, pieceBlockCord := range position.cords {
 
 		if !isOnBoard(&pieceBlockCord) {
-			panic(1)
+			return false
 		}
 
-		if pieceBlockCord.y >= 0 && screen[pieceBlockCord.y][pieceBlockCord.x] == BLOCK{
+		if pieceBlockCord.y >= 0 && screen[pieceBlockCord.y][pieceBlockCord.x] == BLOCK {
 			return false
 		}
 	}
@@ -59,7 +68,6 @@ func drawPiece(position *piecePosition, screen [][]rune) {
 	if position == nil || screen == nil {
 		panic(1)
 	}
-
 
 	for _, pieceBlockCord := range position.cords {
 
@@ -73,16 +81,53 @@ func drawPiece(position *piecePosition, screen [][]rune) {
 	}
 }
 
-func clearScreen(screen [][]rune) {
-	for index := range screen {
-		for index2 := range screen[index] {
-			if (index % (height - 1)) == 0 {
-				screen[index][index2] = sideLine
-			} else if (index2 % ( - 1)) == 0 {
-				screen[index][index2] = downLine
-			} else {
-				screen[index][index2] = ' '
-			}
+func clearRows(position *piecePosition, screen [][]rune) {
+	for _, cord := range position.cords {
+		if !isOnBoard(&cord) {
+			panic(1)
+		}
+
+		if cord.y > 0 && isFull(cord.y, screen) {
+			screen = append((screen)[:cord.y], (screen)[cord.y+1:]...)
+			screen = append((screen)[:1], append([][]rune{nil}, (screen)[1:]...)...)
+			initRow(screen, 1)
+			drawScreenToTerminal(screen)
+		}
+	}
+}
+
+func isFull(row int, screen [][]rune) bool {
+	if row < 0 || row > (height-1) {
+		panic(1)
+	}
+
+	blocksCount := 0
+	for _, segment := range screen[row] {
+		if segment == BLOCK {
+			blocksCount++
+		}
+	}
+	return (width - 2) == blocksCount
+}
+
+func initScreen() [][]rune {
+	screen := make([][]rune, height)
+
+	for row := range screen {
+		initRow(screen, row)
+	}
+	return screen
+}
+
+func initRow(screen [][]rune, row int) {
+	screen[row] = make([]rune, width)
+	for col := range screen[row] {
+		if (row % (height - 1)) == 0 {
+			screen[row][col] = sideLine
+		} else if (col % (width - 1)) == 0 {
+			screen[row][col] = downLine
+		} else {
+			screen[row][col] = EMPTY
 		}
 	}
 }

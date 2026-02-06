@@ -1,8 +1,9 @@
 package main
 
-import(
+import (
 	"math"
 )
+
 type coordinate struct {
 	x int
 	y int
@@ -11,6 +12,7 @@ type coordinate struct {
 type piecePosition struct {
 	cords [4]coordinate
 }
+
 func createRotationMatrix(angle float64) [2][2]int {
 	//only use for int rotation matrixes
 	// can't implement checking for int matrix because floats
@@ -58,7 +60,6 @@ func moveHorizontal(position *piecePosition, offset int) {
 	}
 }
 
-
 func inputMoveLeft(_ *[2][2]int, position *piecePosition) {
 	moveHorizontal(position, -1)
 }
@@ -80,14 +81,35 @@ func rotatePiece(rotationMatrix *[2][2]int, position *piecePosition) {
 	pushFromSide(position)
 }
 
-func fallPiece(position *piecePosition) {
-	for _, cord := range position.cords {
-		if cord.y >= (height - 2) {
-			return
+func spawnPiece(position *piecePosition){
+	newPosition := piecePosition{
+		cords: [4]coordinate{
+			{y: -2, x: 5},
+			{y: -1, x: 5},
+			{y: 0, x: 5},
+			{y: 1, x: 5},
+		},
+	}
+	position.cords = newPosition.cords
+}
+
+func fallPiece(position *piecePosition, screen [][]rune) {
+	positionCopy := *position
+	for i := range positionCopy.cords {
+		positionCopy.cords[i].y += 1
+	}
+	eraserPiece(position, screen)
+	if !isValidPos(&positionCopy, screen) {
+		drawPiece(position, screen)
+		if isEnd(position){
+			panic(1)
 		}
+		clearRows(position, screen)
+		spawnPiece(position)
 	}
 
 	for i := range position.cords {
 		position.cords[i].y += 1
 	}
+	drawPiece(position, screen)
 }

@@ -61,7 +61,7 @@ func convert(input RawMapping) map[gameState]map[byte]gameAction {
 			byte(input.Playing.MoveLeft[0]):    playingMapping["MoveLeft"],
 			byte(input.Playing.MoveRight[0]):   playingMapping["MoveRight"],
 			byte(input.Playing.RotatePiece[0]): playingMapping["RotatePiece"],
-			byte(input.Playing.Quit[0]):        playingMapping["RotatePiece"],
+			byte(input.Playing.Quit[0]):        playingMapping["Quit"],
 		},
 	}
 }
@@ -78,24 +78,63 @@ func captureInput(ch chan byte) {
 	}
 }
 
+
+
+type inputHandler func(inputMapping map[byte]gameAction,
+	ch chan byte,
+	position *piecePosition,
+	rotationMatrix *[2][2]int,
+	screen [][]rune)
+
+var inputHandlerMapping = map[gameState]inputHandler{
+	statePlaying: handleInputPlaying,
+	statePaused:  handleInputPaused,
+}
+
 func handleInput(inputMapping map[gameState]map[byte]gameAction,
-	input chan byte,
 	state gameState,
-	position piecePosition,
-	rotationMatrix [2][2]int) *piecePosition {
+	ch chan byte,
+	position *piecePosition,
+	rotationMatrix *[2][2]int,
+	screen [][]rune) {
+	f, ok := inputHandlerMapping[state]
+	if !ok {
+		panic(1)
+	}
+	f(inputMapping[state], ch, position, rotationMatrix, screen)
+}
+
+func handleInputPlaying(inputMapping map[byte]gameAction,
+	input chan byte,
+	position *piecePosition,
+	rotationMatrix *[2][2]int,
+	screen [][]rune) {
 	select {
 	case i := <-input:
-		f, ok := inputMapping[state][i]
+		f, ok := inputMapping[i]
 		if !ok {
 			lower := byte(unicode.ToLower(rune(i)))
-			f, ok = inputMapping[state][lower]
+			f, ok = inputMapping[lower]
 		}
 		if ok {
-			positionCopy := position
-			f(&rotationMatrix, &positionCopy)
-			return &positionCopy
+			eraserPiece(position, screen)
+			positionCopy := *position
+			f(rotationMatrix, &positionCopy)
+			if isValidPos(&positionCopy, screen) {
+				*position = positionCopy
+				drawPiece(&positionCopy, screen)
+				drawScreenToTerminal(screen)
+			} else {
+				drawPiece(position, screen)
+			}
 		}
 	default:
 	}
-	return nil
+}
+
+func handleInputPaused(inputMapping map[byte]gameAction,
+	input chan byte,
+	_ *piecePosition,
+	_ *[2][2]int,
+	screen [][]rune) {
 }

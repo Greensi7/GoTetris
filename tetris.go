@@ -1,23 +1,15 @@
 package main
 
 import (
-	"bufio"
-	"math/rand"
-	//"errors"
-	"fmt"
-	"math"
+	"golang.org/x/term"
 	"os"
 	"time"
-	"unicode"
-
-	"golang.org/x/term"
 )
 
 const downLine = '│'
 const sideLine = '─'
 const BLOCK = '█'
 const EMPTY = ' '
-
 
 func main() {
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
@@ -28,21 +20,26 @@ func main() {
 	input := make(chan byte, 60)
 	go captureInput(input)
 
-	position := piecePosition{
-		cords: [4]coordinate{
-			{y: -2, x: 5},
-			{y: -1, x: 5},
-			{y: 0, x: 5},
-			{y: 0, x: 6},
-		},
-	}
+	position := piecePosition{}
+	spawnPiece(&position)
+
 	rotationMatrix := createRotationMatrix(90)
-	fmt.Println(rotationMatrix)
-	var screen [maxVertical][maxHorizontal]rune
-	temp := 0
-	clearScreen(&screen)
-	var oldPosition *piecePosition = nil
+	screen := initScreen()
+	drawScreenToTerminal(screen)
+	raw := loadConfig("controls.json")
+	inpuutMapping := convert(raw)
+
+	tickTime := time.Duration(400)
+	ticker := time.NewTicker(tickTime * time.Millisecond)
+	defer ticker.Stop()
 	for {
-		time.Sleep(30 * time.Millisecond)
+		select {
+		case _ = <-ticker.C:
+			fallPiece(&position, screen)
+			drawScreenToTerminal(screen)
+		default:
+			time.Sleep(10 * time.Millisecond)
+			handleInput(inpuutMapping, statePlaying, input, &position, &rotationMatrix, screen)
+		}
 	}
 }
