@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"math/rand"
 )
 
 type coordinate struct {
@@ -30,15 +31,7 @@ func createRotationMatrix(angle float64) [2][2]int {
 func pushFromSide(position *piecePosition) {
 	min := position.cords[0].x
 	max := position.cords[0].x
-	minFlag := false
-	maxFlag := false
 	for _, cord := range position.cords {
-		if cord.x >= (height - 1) {
-			maxFlag = true
-		}
-		if cord.x <= minWidth {
-			minFlag = true
-		}
 		if cord.x > max {
 			max = cord.x
 		}
@@ -46,11 +39,11 @@ func pushFromSide(position *piecePosition) {
 			min = cord.x
 		}
 	}
-	if maxFlag {
-		moveHorizontal(position, -int(math.Abs(float64(max-1-height))))
+	if max >= (width - 1) {
+		moveHorizontal(position, (width-2)-max)
 	}
-	if minFlag {
-		moveHorizontal(position, int(math.Abs(float64(min-minWidth+1))))
+	if min <= minWidth {
+		moveHorizontal(position, int(math.Abs(float64(min-minWidth))+1))
 	}
 }
 
@@ -60,19 +53,19 @@ func moveHorizontal(position *piecePosition, offset int) {
 	}
 }
 
-func inputMoveLeft(_ *[2][2]int, position *piecePosition) {
+func inputMoveLeft(_ *[2][2]int, position *piecePosition, _ [][]rune) {
 	moveHorizontal(position, -1)
 }
 
-func inputMoveRight(_ *[2][2]int, position *piecePosition) {
+func inputMoveRight(_ *[2][2]int, position *piecePosition, _ [][]rune) {
 	moveHorizontal(position, 1)
 }
 
-func inputInterupt(_ *[2][2]int, _ *piecePosition) {
+func inputInterupt(_ *[2][2]int, _ *piecePosition, _ [][]rune) {
 	panic(1)
 }
 
-func rotatePiece(rotationMatrix *[2][2]int, position *piecePosition) {
+func rotatePiece(rotationMatrix *[2][2]int, position *piecePosition, _ [][]rune) {
 	offset := position.cords[1]
 	for i, cord := range position.cords {
 		position.cords[i].x = rotationMatrix[0][0]*(cord.x-offset.x) + rotationMatrix[0][1]*(cord.y-offset.y) + offset.x
@@ -81,16 +74,43 @@ func rotatePiece(rotationMatrix *[2][2]int, position *piecePosition) {
 	pushFromSide(position)
 }
 
-func spawnPiece(position *piecePosition){
-	newPosition := piecePosition{
+var pieceShapes = []piecePosition{
+	{
 		cords: [4]coordinate{
 			{y: -2, x: 5},
 			{y: -1, x: 5},
 			{y: 0, x: 5},
 			{y: 1, x: 5},
 		},
-	}
-	position.cords = newPosition.cords
+	},
+	{
+		cords: [4]coordinate{
+			{y: -2, x: 5},
+			{y: -1, x: 5},
+			{y: 0, x: 5},
+			{y: 0, x: 6},
+		},
+	},
+	{
+		cords: [4]coordinate{
+			{y: -2, x: 5},
+			{y: -1, x: 5},
+			{y: 0, x: 5},
+			{y: -1, x: 6},
+		},
+	},
+	{
+		cords: [4]coordinate{
+			{y: -2, x: 5},
+			{y: -1, x: 5},
+			{y: -1, x: 6},
+			{y: 0, x: 6},
+		},
+	},
+}
+
+func spawnPiece(position *piecePosition) {
+	position.cords = pieceShapes[rand.Intn(len(pieceShapes))].cords
 }
 
 func fallPiece(position *piecePosition, screen [][]rune) {
@@ -101,7 +121,7 @@ func fallPiece(position *piecePosition, screen [][]rune) {
 	eraserPiece(position, screen)
 	if !isValidPos(&positionCopy, screen) {
 		drawPiece(position, screen)
-		if isEnd(position){
+		if isEnd(position) {
 			panic(1)
 		}
 		clearRows(position, screen)
@@ -112,4 +132,23 @@ func fallPiece(position *piecePosition, screen [][]rune) {
 		position.cords[i].y += 1
 	}
 	drawPiece(position, screen)
+}
+
+func inputFallPiece(_ *[2][2]int, position *piecePosition, screen [][]rune) {
+	positionCopy := *position
+	for i := range positionCopy.cords {
+		positionCopy.cords[i].y += 1
+	}
+	if !isValidPos(&positionCopy, screen) {
+		drawPiece(position, screen)
+		if isEnd(position) {
+			panic(1)
+		}
+		clearRows(position, screen)
+		spawnPiece(position)
+	}
+
+	for i := range position.cords {
+		position.cords[i].y += 1
+	}
 }

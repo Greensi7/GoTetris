@@ -11,6 +11,7 @@ import (
 
 // TODO implement unique validator check
 type RawPlaying struct {
+	MoveDown	string `json:"down" validate:"len=1,ascii,required"`
 	MoveRight   string `json:"right" validate:"len=1,ascii,required"`
 	MoveLeft    string `json:"left" validate:"len=1,ascii,required"`
 	RotatePiece string `json:"rotate" validate:"len=1,ascii,required"`
@@ -22,7 +23,7 @@ type RawMapping struct {
 	Playing RawPlaying `json:"Playing" validate:"required"`
 }
 
-type gameAction func(*[2][2]int, *piecePosition)
+type gameAction func(*[2][2]int, *piecePosition, [][]rune)
 type gameState string
 
 const (
@@ -35,6 +36,7 @@ var playingMapping = map[string]gameAction{
 	"RotatePiece": rotatePiece,
 	"MoveLeft":    inputMoveLeft,
 	"MoveRight":   inputMoveRight,
+	"MoveDown":	   inputFallPiece,
 }
 
 func loadConfig(fileName string) RawMapping {
@@ -58,6 +60,7 @@ func loadConfig(fileName string) RawMapping {
 func convert(input RawMapping) map[gameState]map[byte]gameAction {
 	return map[gameState]map[byte]gameAction{
 		statePlaying: {
+			byte(input.Playing.MoveDown[0]):    playingMapping["MoveDown"],
 			byte(input.Playing.MoveLeft[0]):    playingMapping["MoveLeft"],
 			byte(input.Playing.MoveRight[0]):   playingMapping["MoveRight"],
 			byte(input.Playing.RotatePiece[0]): playingMapping["RotatePiece"],
@@ -77,8 +80,6 @@ func captureInput(ch chan byte) {
 		ch <- input
 	}
 }
-
-
 
 type inputHandler func(inputMapping map[byte]gameAction,
 	ch chan byte,
@@ -119,7 +120,7 @@ func handleInputPlaying(inputMapping map[byte]gameAction,
 		if ok {
 			eraserPiece(position, screen)
 			positionCopy := *position
-			f(rotationMatrix, &positionCopy)
+			f(rotationMatrix, &positionCopy, screen)
 			if isValidPos(&positionCopy, screen) {
 				*position = positionCopy
 				drawPiece(&positionCopy, screen)

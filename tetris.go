@@ -12,6 +12,7 @@ const BLOCK = '█'
 const EMPTY = ' '
 
 func main() {
+
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
 		panic(err)
@@ -29,7 +30,7 @@ func main() {
 	raw := loadConfig("controls.json")
 	inpuutMapping := convert(raw)
 
-	tickTime := time.Duration(400)
+	tickTime := time.Duration(200)
 	ticker := time.NewTicker(tickTime * time.Millisecond)
 	defer ticker.Stop()
 	for {
