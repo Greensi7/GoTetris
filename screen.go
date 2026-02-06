@@ -3,6 +3,11 @@ package main
 //const width = 13
 //const height = 23
 
+const downLine = '│'
+const sideLine = '─'
+const BLOCK = '█'
+const EMPTY = ' '
+
 const height = 24
 const width = 13
 const minWidth = 0

@@ -6,10 +6,6 @@ import (
 	"time"
 )
 
-const downLine = '│'
-const sideLine = '─'
-const BLOCK = '█'
-const EMPTY = ' '
 
 func main() {
 
